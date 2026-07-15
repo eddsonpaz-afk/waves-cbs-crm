@@ -25,14 +25,14 @@ async function saveLead(event) {
 
     setLeads((current) => [newLead, ...current]);
 
-    // Limpa todos os campos somente depois de salvar de verdade
+    // Limpa o cadastro somente após a planilha confirmar
     form.reset();
 
     notify("Lead salvo com sucesso!");
 
     setScreen("leads");
   } catch (error) {
-    console.error("Erro ao salvar lead:", error);
+    console.error("Erro real ao salvar lead:", error);
 
     notify(
       error instanceof Error
