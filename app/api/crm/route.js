@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const payload = await request.json();
-    const apiUrl = process.env.CRM_API_URL;
-
+const apiUrl =
+  "https://script.google.com/macros/s/AKfycbwTYbWBQna3XjdxQOTpmwz34D4376ywJXwu1yn3bcAfOiIseJSCWA7oYJFekQjntpwz/exec";
     if (!apiUrl) {
       return NextResponse.json({ success: false, demo: true, message: 'CRM_API_URL não configurada.' }, { status: 503 });
     }
