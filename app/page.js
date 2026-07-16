@@ -60,6 +60,58 @@ export default function Home() {
     } finally { setLoading(false); }
   }
 
+
+  async function handleSellerRegistration(event) {
+    event.preventDefault();
+
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+
+    const nome = String(form.get("nome") || "").trim();
+    const email = String(form.get("email") || "").trim().toLowerCase();
+    const telefone = String(form.get("telefone") || "").trim();
+    const senha = String(form.get("senha") || "").trim();
+    const confirmarSenha = String(
+      form.get("confirmarSenha") || ""
+    ).trim();
+
+    if (!nome || !email || !telefone || !senha || !confirmarSenha) {
+      notify("Preencha todos os campos.");
+      return;
+    }
+
+    if (senha.length < 6) {
+      notify("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      notify("As senhas não são iguais.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api("createSeller", {
+        nome,
+        email,
+        telefone,
+        senha
+      });
+
+      formElement.reset();
+      notify("Vendedor cadastrado com sucesso.");
+      setScreen("login");
+    } catch (error) {
+      notify(
+        error.message || "Não foi possível cadastrar o vendedor."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const filteredLeads = useMemo(() => leads.filter(lead => {
     const statusOk = statusFilter === 'Todos' || lead.status === statusFilter;
     const text = `${lead.nome} ${lead.empresa} ${lead.cidade} ${lead.telefone}`.toLowerCase();
@@ -95,6 +147,163 @@ export default function Home() {
     }
   }
 
+  if (screen === "seller-register") {
+    return (
+      <main className="login-shell">
+        <section className="brand-presentation">
+          <div className="brand-lockup">
+            <img
+              src="/logos/waves-plus-oficial.png"
+              alt="Waves Plus"
+            />
+            <div />
+            <img
+              src="/logos/cbs-oficial.png"
+              alt="CBS Importadora"
+            />
+          </div>
+
+          <span className="eyebrow">
+            NOVO ACESSO COMERCIAL
+          </span>
+
+          <h1>
+            CADASTRO <strong>DE VENDEDOR</strong>
+          </h1>
+
+          <p>
+            Cada vendedor terá sua própria área e visualizará apenas
+            os leads cadastrados com o seu acesso.
+          </p>
+
+          <div className="benefits">
+            <div>
+              <UserRound />
+              Acesso individual
+            </div>
+            <div>
+              <Users />
+              Leads separados por vendedor
+            </div>
+            <div>
+              <BarChart3 />
+              Indicadores individuais
+            </div>
+            <div>
+              <ShieldCheck />
+              Administrador com visão geral
+            </div>
+          </div>
+        </section>
+
+        <section className="login-card">
+          <div className="mobile-brand">
+            <img
+              src="/logos/waves-plus-oficial.png"
+              alt="Waves Plus"
+            />
+            <img
+              src="/logos/cbs-oficial.png"
+              alt="CBS Importadora"
+            />
+          </div>
+
+          <span className="eyebrow">CRIAR NOVO ACESSO</span>
+          <h2>Cadastrar vendedor</h2>
+          <p>
+            Preencha os dados para criar a área individual do vendedor.
+          </p>
+
+          <form onSubmit={handleSellerRegistration}>
+            <label>
+              Nome completo
+              <div className="field">
+                <UserRound />
+                <input
+                  name="nome"
+                  type="text"
+                  placeholder="Nome do vendedor"
+                />
+              </div>
+            </label>
+
+            <label>
+              E-mail
+              <div className="field">
+                <Mail />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="vendedor@empresa.com"
+                />
+              </div>
+            </label>
+
+            <label>
+              Telefone
+              <div className="field">
+                <Phone />
+                <input
+                  name="telefone"
+                  type="tel"
+                  placeholder="(85) 99999-9999"
+                />
+              </div>
+            </label>
+
+            <label>
+              Senha
+              <div className="field">
+                <LockKeyhole />
+                <input
+                  name="senha"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Mínimo de 6 caracteres"
+                />
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label="Mostrar ou ocultar senha"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              Confirmar senha
+              <div className="field">
+                <LockKeyhole />
+                <input
+                  name="confirmarSenha"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Digite a senha novamente"
+                />
+              </div>
+            </label>
+
+            <button
+              className="primary-button"
+              disabled={loading}
+            >
+              {loading ? "CADASTRANDO..." : "CADASTRAR VENDEDOR"}
+            </button>
+          </form>
+
+          <button
+            className="text-button"
+            onClick={() => setScreen("login")}
+          >
+            Voltar para o login
+          </button>
+        </section>
+
+        {toast && <div className="toast">{toast}</div>}
+      </main>
+    );
+  }
+
   if (screen === 'login') {
     return <main className="login-shell">
       <section className="brand-presentation">
@@ -112,7 +321,7 @@ export default function Home() {
           <label>Senha<div className="field"><LockKeyhole/><input name="senha" type={showPassword?'text':'password'} placeholder="Sua senha"/><button type="button" className="icon-button" onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff/>:<Eye/>}</button></div></label>
           <button className="primary-button" disabled={loading}>{loading?'ENTRANDO...':'ENTRAR'}</button>
         </form>
-        <button className="text-button">Cadastrar vendedor</button><small>WAVES PLUS + CBS · JUNTOS CONSTRUÍMOS O FUTURO</small>
+        <button className="text-button" onClick={()=>setScreen("seller-register")}>Cadastrar vendedor</button><small>WAVES PLUS + CBS · JUNTOS CONSTRUÍMOS O FUTURO</small>
       </section>
       {toast && <div className="toast">{toast}</div>}
     </main>;
